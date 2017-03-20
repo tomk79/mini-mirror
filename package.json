@@ -1,6 +1,6 @@
 {
   "name": "mini-mirror",
-  "version": "0.1.0-alpha.1+nb",
+  "version": "0.1.0",
   "description": "mini mirror app for desktop.",
   "main": "index.html",
   "scripts": {
