@@ -1,4 +1,5 @@
 window.win = nw.Window.get();
+window.win.setAlwaysOnTop(true);
 let mirror = document.getElementById('mirror');
 let localStream;
 
