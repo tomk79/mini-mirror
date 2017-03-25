@@ -5,13 +5,36 @@ html, body{
     overflow: hidden;
     padding: 0;
     margin: 0;
-    background-color: #000;
+}
+.frame{
+    position: relative;
+    height: 100%;
+    width: 100%;
+    border-radius: 0%;
+    overflow: hidden;
+}
+.v-wrap-1{
+    position: absolute;
+    left: 50%;
+    height: 100%;
+    width: 1000px;
+    overflow: show;
+    margin: 0 auto;
+}
+.v-wrap-2{
+    position: absolute;
+    left: -50%;
+    height: 100%;
+    width: 1000px;
+    text-align:center;
 }
 #mirror{
-    width: 100%;
+    position: relative;
+    width: auto;
     height: 100%;
     border: none;
     transform: scale(-1, 1);
+    margin: 0 auto;
 }
 #mirror.no-reverse{
     transform: scale(1, 1);

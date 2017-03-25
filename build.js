@@ -45,6 +45,7 @@ writeLog('Build...');
 var nw = new NwBuilder({
 	files: [
 		'./package.json',
+		'./common/**/*',
 		'./index.html',
 		'./index_files/**/*',
 		'./node_modules/**/*'

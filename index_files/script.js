@@ -32,7 +32,7 @@ let localStream;
 	menubar.items[0].label = "mini mirror";
 
 	nw.Window.get().menu = menubar;
-	console.log( nw.Window.get().menu.items );
+	// console.log( nw.Window.get().menu.items );
 })();
 
 
@@ -41,8 +41,21 @@ navigator.mediaDevices.getUserMedia({video: true, audio: false})
 	.then(function (stream) { // success
 		localStream = stream;
 		mirror.src = window.URL.createObjectURL(localStream);
+		console.log('success');
 	}).catch(function (error) { // error
 		console.error('mediaDevice.getUserMedia() error:', error);
 		return;
 	})
 ;
+
+
+$(window).on('load', function(){
+	$('#mirror')
+		.on('mouseover', function(){
+			nw.Window.get().show(true);
+		})
+		.on('mouseout', function(){
+			nw.Window.get().show(false);
+		})
+	;
+});
