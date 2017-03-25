@@ -48,8 +48,7 @@ var nw = new NwBuilder({
 			'./package.json',
 			'./common/**/*',
 			'./index.html',
-			'./index_files/**/*',
-			'./node_modules/**/*'
+			'./index_files/**/*'
 		];
 		var nodeModules = fs.readdirSync('./node_modules/');
 		for(var i in nodeModules){
@@ -68,7 +67,7 @@ var nw = new NwBuilder({
 					break;
 				default:
 					// まるっと登録するパッケージ
-					rtn.push( './node_modules/'+modName+'/**' );
+					rtn.push( './node_modules/'+modName+'/**/*' );
 					break;
 			}
 		}
