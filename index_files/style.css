@@ -13,3 +13,6 @@ html, body{
     border: none;
     transform: scale(-1, 1);
 }
+#mirror.no-reverse{
+    transform: scale(1, 1);
+}
