@@ -62,7 +62,13 @@ var nw = new NwBuilder({
 				case 'nw':
 				case 'nw-builder':
 				case 'mocha':
+				case 'xmlbuilder':
+				case 'xmldom':
+				case 'xtend':
+				case 'y18n':
 				case 'spawn-sync':
+				case 'zip-folder':
+				case 'zip-stream':
 					// ↑これらは除外するパッケージ
 					break;
 				default:
