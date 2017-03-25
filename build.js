@@ -43,13 +43,51 @@ writeLog( getTimeString() );
 writeLog('Build...');
 
 var nw = new NwBuilder({
-	files: [
-		'./package.json',
-		'./common/**/*',
-		'./index.html',
-		'./index_files/**/*',
-		'./node_modules/**/*'
-	],
+	files: (function(packageJson){
+		var rtn = [
+			'./package.json',
+			'./common/**/*',
+			'./index.html',
+			'./index_files/**/*',
+			'./node_modules/**/*'
+		];
+		var nodeModules = fs.readdirSync('./node_modules/');
+		for(var i in nodeModules){
+			var modName = nodeModules[i];
+			switch(modName){
+				case '.bin':
+				case 'gulp':
+				case 'gulp-plumber':
+				case 'gulp-rename':
+				case 'gulp-sass':
+				case 'nw':
+				case 'nw-builder':
+				case 'mocha':
+				case 'spawn-sync':
+					// ↑これらは除外するパッケージ
+					break;
+				default:
+					// まるっと登録するパッケージ
+					rtn.push( './node_modules/'+modName+'/**' );
+					break;
+			}
+		}
+		var composerVendor = fs.readdirSync('./vendor/');
+		for(var i in composerVendor){
+			var modName = composerVendor[i];
+			switch(modName){
+				case 'bin':
+				case 'phpunit':
+					// ↑これらは除外するパッケージ
+					break;
+				default:
+					// まるっと登録するパッケージ
+					rtn.push( './vendor/'+modName+'/**' );
+					break;
+			}
+		}
+		return rtn;
+	})(packageJson) , // use the glob format
 	flavor: 'sdk',
 	macIcns: './common/images/appicon-osx.icns',
 	winIco: './common/images/appicon-win.ico',
