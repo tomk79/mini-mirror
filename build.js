@@ -72,20 +72,6 @@ var nw = new NwBuilder({
 					break;
 			}
 		}
-		var composerVendor = fs.readdirSync('./vendor/');
-		for(var i in composerVendor){
-			var modName = composerVendor[i];
-			switch(modName){
-				case 'bin':
-				case 'phpunit':
-					// ↑これらは除外するパッケージ
-					break;
-				default:
-					// まるっと登録するパッケージ
-					rtn.push( './vendor/'+modName+'/**' );
-					break;
-			}
-		}
 		return rtn;
 	})(packageJson) , // use the glob format
 	flavor: 'sdk',
