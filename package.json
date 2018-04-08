@@ -24,13 +24,13 @@
   },
   "window": {
     "title": "mini mirror",
-    "frame": true,
+    "frame": false,
     "toolbar": false,
     "always-on-top": true,
     "position": "center",
     "resizable": false,
-    "visible-on-all-workspaces": false,
-    "transparent": false,
+    "visible-on-all-workspaces": true,
+    "transparent": true,
     "width": 200,
     "height": 200
   },

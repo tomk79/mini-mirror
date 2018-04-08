@@ -3,6 +3,7 @@ window.win.setAlwaysOnTop(true);
 window.win.title = "mini mirror";
 let mirror = document.getElementById('mirror');
 let localStream;
+window.dragMode = {};
 
 (function(){
 	var menubar = new nw.Menu({type:"menubar"});
@@ -49,13 +50,32 @@ navigator.mediaDevices.getUserMedia({video: true, audio: false})
 ;
 
 
-$(window).on('load', function(){
-	$('#mirror')
-		.on('mouseover', function(){
-			nw.Window.get().show(true);
-		})
-		.on('mouseout', function(){
-			nw.Window.get().show(false);
-		})
-	;
-});
+$(window)
+	.on('load', function(){
+		$('#mirror')
+			.on('mouseover', function(){
+				nw.Window.get().show(true);
+			})
+			.on('mouseout', function(){
+				nw.Window.get().show(false);
+			})
+		;
+	})
+	.on('mousedown', function(e){
+		window.dragMode.mode = 'dragWindow';
+		window.dragMode.startX = nw.Window.get().x;
+		window.dragMode.startY = nw.Window.get().y;
+		window.dragMode.screenX = e.originalEvent.screenX;
+		window.dragMode.screenY = e.originalEvent.screenY;
+	})
+	.on('mousemove', function(e){
+		if(window.dragMode.mode == 'dragWindow'){
+			var dM = window.dragMode;
+			nw.Window.get().x = (dM.startX - dM.screenX + e.originalEvent.screenX);
+			nw.Window.get().y = (dM.startY - dM.screenY + e.originalEvent.screenY);
+		}
+	})
+	.on('mouseup', function(e){
+		window.dragMode.mode = null;
+	})
+;
