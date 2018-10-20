@@ -6,7 +6,7 @@
   "main": "index.html",
   "scripts": {
     "start": "./node_modules/.bin/nw",
-    "build": "node build.js",
+    "build": "node build/build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
