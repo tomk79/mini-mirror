@@ -5,9 +5,9 @@ mini mirror app for desktop.
 
 ## 更新履歴 - Change log
 
-### mini-mirror 0.3.1 (リリース日未定)
+### mini-mirror 0.3.1 (2018-10-20)
 
-- ?????????????????????
+- macOS 版にデジタル署名を追加した。
 
 ### mini-mirror 0.3.0 (2018-04-08)
 
