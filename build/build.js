@@ -2,15 +2,55 @@ var fs = require('fs');
 var fsX = require('fs-extra');
 var utils79 = require('utils79');
 var it79 = require('iterate79');
-var phpjs = require('phpjs');
+var NwBuilder = require('nw-builder');
 var zipFolder = require('zip-folder');
-var packageJson = require('./package.json');
+var packageJson = require('../package.json');
+var phpjs = require('phpjs');
 var date = new Date();
 var appName = packageJson.name;
-var NwBuilder = require('nw-builder');
+var versionSign = packageJson.version;
+var platforms = [
+	'osx64',
+	// 'win64',
+	'win32',
+	'linux64'
+];
+var APPLE_IDENTITY = null;
+if( utils79.is_file( './apple_identity.txt' ) ){
+	APPLE_IDENTITY = fs.readFileSync('./apple_identity.txt').toString();
+	APPLE_IDENTITY = utils79.trim(APPLE_IDENTITY);
+}
 
+function pad(str, len){
+	str += '';
+	str = phpjs.str_pad(str, len, '0', 'STR_PAD_LEFT');
+	return str;
+}
+function getTimeString(){
+	var date = new Date();
+	return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+}
+function writeLog(row){
+	fs.appendFile( __dirname+'/dist/buildlog.txt', row+"\n" ,'utf8', function(err){
+		if(err){
+			console.error(err);
+		}
+	} );
+	console.log(row);
+}
 
-console.log('== build "'+appName+'" ==');
+if( packageJson.version.match(new RegExp('\\+(?:[a-zA-Z0-9\\_\\-\\.]+\\.)?nb$')) ){
+	versionSign += '-'+pad(date.getFullYear(),4)+pad(date.getMonth()+1, 2)+pad(date.getDate(), 2);
+	versionSign += '-'+pad(date.getHours(),2)+pad(date.getMinutes(), 2);
+	packageJson.version = versionSign;
+	// 一時的なバージョン番号を付与した package.json を作成し、
+	// もとのファイルを リネームしてとっておく。
+	// ビルドが終わった後に元に戻す。
+	require('fs').renameSync('./package.json', './package.json.orig');
+	require('fs').writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
+}
+
+console.log('== build "'+appName+'" v'+versionSign+' ==');
 
 console.log('Cleanup...');
 (function(base){
@@ -23,25 +63,12 @@ console.log('Cleanup...');
 			fsX.unlinkSync(base+'/'+ls[idx]);
 		}
 	}
-})( __dirname+'/build/' );
+})( __dirname+'/dist/' );
 console.log('');
 
-function getTimeString(){
-	var date = new Date();
-	return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
-}
-function writeLog(row){
-	fs.appendFile( __dirname+'/build/buildlog.txt', row+"\n" ,'utf8', function(err){
-		if(err){
-			console.error(err);
-		}
-	} );
-	console.log(row);
-}
 writeLog( getTimeString() );
 
 writeLog('Build...');
-
 var nw = new NwBuilder({
 	files: (function(packageJson){
 		var rtn = [
@@ -79,87 +106,80 @@ var nw = new NwBuilder({
 		}
 		return rtn;
 	})(packageJson) , // use the glob format
+	version: '0.21.1',// <- version number of node-webkit
 	flavor: 'sdk',
-	macIcns: './common/images/appicon-osx.icns',
-	winIco: './common/images/appicon-win.ico',
+	macIcns: './app/common/images/appicon-osx.icns',
+	winIco: './app/common/images/appicon-win.ico',
 	zip: false,
-	platforms: [
-		'linux64',
-		'osx64',
-		'win32'
-	],
-	version: '0.21.1'
+	platforms: platforms
 });
-nw.on('log',  writeLog);
 
+//Log stuff you want
+nw.on('log',  writeLog);
 
 // Build returns a promise
 nw.build().then(function () {
+
+	if( require('fs').existsSync('./package.json.orig') ){
+		// 一時的なバージョン番号を付与した package.json を削除し、
+		// もとのファイルに戻す。
+		require('fs').renameSync('./package.json.orig', './package.json');
+	}
 
 	writeLog('all build done!');
 	writeLog( getTimeString() );
 
 	(function(){
-		var versionSign = packageJson.version;
-		function pad(str, len){
-			str += '';
-			str = phpjs.str_pad(str, len, '0', 'STR_PAD_LEFT');
-			return str;
-		}
-		if( packageJson.version.match(new RegExp('\\+(?:[a-zA-Z0-9\\_\\-\\.]+\\.)?nb$')) ){
-			versionSign += '-'+pad(date.getFullYear(),4)+pad(date.getMonth()+1, 2)+pad(date.getDate(), 2);
-			versionSign += '-'+pad(date.getHours(),2)+pad(date.getMinutes(), 2);
-		}
-
 		it79.fnc({}, [
 			function(itPj, param){
-				writeLog('ZIP osx64...');
-				zipFolder(
-					__dirname + '/build/'+appName+'/osx64/',
-					__dirname + '/build/'+appName+'-'+versionSign+'-osx64.zip',
-					function(err) {
-						if(err) {
-							writeLog('ERROR!', err);
-						} else {
-							writeLog('success. - '+'./build/'+appName+'-'+versionSign+'-osx64.zip');
-						}
-						itPj.next(param);
-					}
+				// macOS 版に 署名を追加する
+				if( !APPLE_IDENTITY ){
+					itPj.next(param);
+					return;
+				}
+				writeLog('-- Apple Developer Certification:');
+				writeLog(APPLE_IDENTITY);
+				var proc = require('child_process').spawn(
+					'codesign',
+					[
+						'--deep',
+						'-s', APPLE_IDENTITY,
+						'./build/'+appName+'/osx64/'+appName+'.app'
+					],
+					{}
 				);
+				proc.on('close', function(){
+					writeLog('done!');
+					itPj.next(param);
+				});
 			},
 			function(itPj, param){
-				writeLog('ZIP win32...');
-				zipFolder(
-					__dirname + '/build/'+appName+'/win32/',
-					__dirname + '/build/'+appName+'-'+versionSign+'-win32.zip',
-					function(err) {
-						if(err) {
-							writeLog('ERROR!', err);
-						} else {
-							writeLog('success. - '+'./build/'+appName+'-'+versionSign+'-win32.zip');
-						}
-						itPj.next(param);
-					}
-				);
-			},
-			function(itPj, param){
-				writeLog('ZIP linux64...');
-				zipFolder(
-					__dirname + '/build/'+appName+'/linux64/',
-					__dirname + '/build/'+appName+'-'+versionSign+'-linux64.zip',
-					function(err) {
-						if(err) {
-							writeLog('ERROR!', err);
-						} else {
-							writeLog('success. - '+'./build/'+appName+'-'+versionSign+'-linux64.zip');
-						}
+				// ZIP Apps.
+				it79.ary(
+					platforms,
+					function(it2, platformName, idx){
+						writeLog('[platform: '+platformName+'] Zipping...');
+						zipFolder(
+							__dirname + '/'+appName+'/'+platformName+'/',
+							__dirname + '/dist/'+appName+'-'+versionSign+'-'+platformName+'.zip',
+							function(err) {
+								if(err) {
+									writeLog('ERROR!', err);
+								} else {
+									writeLog('success. - '+'./build/dist/'+appName+'-'+versionSign+'-'+platformName+'.zip');
+								}
+								it2.next();
+							}
+						);
+					},
+					function(){
 						itPj.next(param);
 					}
 				);
 			},
 			function(itPj, param){
 				writeLog('cleanup...');
-				fsX.removeSync(__dirname+'/build/'+appName+'/');
+				fsX.removeSync(__dirname+'/'+appName+'/');
 				itPj.next(param);
 			},
 			function(itPj, param){
