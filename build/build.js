@@ -108,8 +108,8 @@ var nw = new NwBuilder({
 	})(packageJson) , // use the glob format
 	version: '0.21.1',// <- version number of node-webkit
 	flavor: 'sdk',
-	macIcns: './app/common/images/appicon-osx.icns',
-	winIco: './app/common/images/appicon-win.ico',
+	macIcns: './common/images/appicon-osx.icns',
+	winIco: './common/images/appicon-win.ico',
 	zip: false,
 	platforms: platforms
 });
