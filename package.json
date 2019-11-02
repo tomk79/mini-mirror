@@ -17,7 +17,7 @@
   "devDependencies": {
     "fs-extra": "^2.1.2",
     "iterate79": "^1.0.0",
-    "nw": "0.21.1-sdk",
+    "nw": "0.42.2",
     "nw-builder": "3.2.0",
     "phpjs": "^1.3.2",
     "zip-folder": "^1.0.0"
